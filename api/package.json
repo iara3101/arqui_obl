@@ -6,12 +6,17 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
+    "predev": "pnpm run prisma:generate",
     "dev": "nest start --watch",
+    "prebuild": "pnpm run prisma:generate",
     "build": "nest build",
+    "prestart": "pnpm run prisma:generate",
     "start": "node dist/main",
+    "prestart:prod": "pnpm run prisma:generate",
     "start:prod": "node dist/main",
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
+    "pretest": "pnpm run prisma:generate",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
@@ -20,8 +25,10 @@
     "prisma:generate": "ts-node --project tsconfig.json scripts/prisma-generate.ts",
     "prisma:migrate": "prisma migrate deploy",
     "prisma:deploy": "pnpm run prisma:migrate",
+    "preseed": "pnpm run prisma:generate",
     "seed": "ts-node --project tsconfig.json prisma/seed.ts",
-    "openapi:export": "ts-node --project tsconfig.json src/scripts/export-openapi.ts"
+    "openapi:export": "ts-node --project tsconfig.json src/scripts/export-openapi.ts",
+    "postinstall": "pnpm run prisma:generate"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.893.0",
@@ -45,7 +52,7 @@
     "bcrypt": "^6.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
-    "fastify": "^5.2.1",
+    "fastify": "^5.6.0",
     "joi": "^17.13.3",
     "nodemailer": "^7.0.6",
     "passport": "^0.7.0",
@@ -87,6 +94,11 @@
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.20.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "fastify": "^5.6.0"
+    }
   },
   "jest": {
     "moduleFileExtensions": [
