@@ -6,36 +6,12 @@ import {
 } from '@nestjs/platform-fastify';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import fastifyCors from '@fastify/cors';
-import type { FastifyCorsOptions, FastifyCorsOptionsDelegate } from '@fastify/cors';
 import fastifyHelmet from '@fastify/helmet';
-import type { FastifyHelmetOptions } from '@fastify/helmet';
 import fastifyMultipart from '@fastify/multipart';
-import type {
-  FastifyMultipartAttachFieldsToBodyOptions,
-  FastifyMultipartBaseOptions,
-  FastifyMultipartOptions,
-} from '@fastify/multipart';
 import { ConfigService } from '@nestjs/config';
 import pino from 'pino';
 import { AppModule } from './app.module';
 import { PrismaService } from './infrastructure/prisma/prisma.service';
-import type {
-  FastifyPluginAsync,
-  FastifyPluginCallback,
-  FastifyPluginOptions,
-} from 'fastify';
-
-type CompatibleFastifyPlugin<TOptions extends FastifyPluginOptions> =
-  | FastifyPluginCallback<TOptions>
-  | FastifyPluginAsync<TOptions>;
-
-type FastifyCorsPluginOptions = FastifyCorsOptions | FastifyCorsOptionsDelegate;
-
-type FastifyMultipartPluginOptions =
-  | FastifyMultipartBaseOptions
-  | FastifyMultipartOptions
-  | FastifyMultipartAttachFieldsToBodyOptions;
-
 async function bootstrap() {
   const adapter = new FastifyAdapter({
     logger: pino({
@@ -64,18 +40,9 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
 
-  await app.register(
-    fastifyHelmet as CompatibleFastifyPlugin<FastifyHelmetOptions>,
-    { contentSecurityPolicy: false },
-  );
-  await app.register(
-    fastifyCors as CompatibleFastifyPlugin<FastifyCorsPluginOptions>,
-    { origin: true },
-  );
-  await app.register(
-    fastifyMultipart as CompatibleFastifyPlugin<FastifyMultipartPluginOptions>,
-    {},
-  );
+  await app.register(fastifyHelmet, { contentSecurityPolicy: false });
+  await app.register(fastifyCors, { origin: true });
+  await app.register(fastifyMultipart, {});
 
   app.useGlobalPipes(
     new ValidationPipe({
