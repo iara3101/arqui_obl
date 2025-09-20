@@ -4,7 +4,8 @@ services:
   api:
     build:
       context: ./api
-    command: pnpm run dev
+    command: >-
+      sh -c "pnpm install --frozen-lockfile=false && pnpm run dev"
     ports:
       - "3000:3000"
     env_file:
