@@ -12,7 +12,6 @@ import { ConfigService } from '@nestjs/config';
 import pino from 'pino';
 import { AppModule } from './app.module';
 import { PrismaService } from './infrastructure/prisma/prisma.service';
-
 async function bootstrap() {
   const adapter = new FastifyAdapter({
     logger: pino({
