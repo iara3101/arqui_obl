@@ -5,6 +5,7 @@
   "author": "",
   "private": true,
   "license": "UNLICENSED",
+  "packageManager": "pnpm@9.12.3",
   "scripts": {
     "predev": "pnpm run prisma:generate",
     "dev": "nest start --watch",

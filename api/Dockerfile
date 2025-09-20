@@ -4,7 +4,7 @@ FROM node:20.18-bullseye
 ENV PNPM_HOME=/usr/local/share/pnpm
 ENV PATH=${PNPM_HOME}:$PATH
 
-RUN corepack enable
+RUN corepack enable && corepack prepare pnpm@9.12.3 --activate
 
 WORKDIR /usr/src/app
 
