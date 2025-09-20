@@ -1,0 +1,84 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "CRM SaaS API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "summary": "Login",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string" },
+                  "companyId": { "type": "string" }
+                },
+                "required": ["email", "password", "companyId"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Token emitido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "accessToken": { "type": "string" },
+                    "forcePasswordReset": { "type": "boolean" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/accounts": {
+      "get": {
+        "summary": "List accounts",
+        "parameters": [
+          { "name": "Authorization", "in": "header", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Listado" } }
+      },
+      "post": {
+        "summary": "Create account",
+        "parameters": [
+          { "name": "Authorization", "in": "header", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": { "name": { "type": "string" } },
+                "required": ["name"]
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Creado" } }
+      }
+    },
+    "/reports/top-accounts": {
+      "get": {
+        "summary": "Top accounts",
+        "parameters": [
+          { "name": "Authorization", "in": "header", "required": true, "schema": { "type": "string" } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer" } }
+        ],
+        "responses": { "200": { "description": "Lista de cuentas" } }
+      }
+    }
+  }
+}
