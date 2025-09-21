@@ -5,8 +5,8 @@ import * as bcrypt from 'bcrypt';
 const prisma = new PrismaClient();
 
 async function main() {
-  const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? 'Admin123!';
-  const memberPassword = process.env.SEED_MEMBER_PASSWORD ?? 'Member123!';
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? 'Password1';
+  const memberPassword = process.env.SEED_MEMBER_PASSWORD ?? 'Password1';
   const saltRounds = Number(process.env.BCRYPT_SALT_ROUNDS ?? 12);
 
   const [company] = await prisma.$transaction(async (tx) => {
@@ -21,7 +21,7 @@ async function main() {
       where: {
         companyId_email: {
           companyId: company.id,
-          email: 'admin@ort.com',
+          email: 'admin@saas.com',
         },
       },
       update: {
@@ -31,7 +31,7 @@ async function main() {
       },
       create: {
         companyId: company.id,
-        email: 'admin@ort.com',
+        email: 'admin@saas.com',
         passwordHash: adminHash,
         role: UserRole.ADMIN,
         forcePasswordReset: false,
@@ -43,7 +43,7 @@ async function main() {
       where: {
         companyId_email: {
           companyId: company.id,
-          email: 'member@ort.com',
+          email: 'usuario@saas.com',
         },
       },
       update: {
@@ -53,7 +53,7 @@ async function main() {
       },
       create: {
         companyId: company.id,
-        email: 'member@ort.com',
+        email: 'usuario@saas.com',
         passwordHash: memberHash,
         role: UserRole.MEMBER,
         forcePasswordReset: false,
