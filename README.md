@@ -1,1 +1,0 @@
-# arqui_obl
