@@ -1,0 +1,181 @@
+// Prisma schema for CRM SaaS
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  MEMBER
+}
+
+enum OpportunityStage {
+  PREPARACION
+  PRESENTACION
+  NEGOCIACION
+  VENTA
+  NO_VENTA
+}
+
+model Company {
+  id        String     @id @default(uuid())
+  name      String     @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  users        User[]
+  apiKeys      ApiKey[]
+  accounts     Account[]
+  contacts     Contact[]
+  opportunities Opportunity[]
+  attachments  Attachment[]
+  stageChanges StageChange[]
+
+  @@map("companies")
+}
+
+model User {
+  id                 String    @id @default(uuid())
+  companyId          String
+  email              String
+  passwordHash       String
+  role               UserRole  @default(MEMBER)
+  forcePasswordReset Boolean   @default(true)
+  invitationToken    String?   @unique
+  invitationExpiresAt DateTime?
+  lastLoginAt        DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  stageChanges StageChange[]
+  attachments  Attachment[]
+
+  @@map("users")
+  @@unique([companyId, email])
+}
+
+model ApiKey {
+  id         String   @id @default(uuid())
+  companyId  String
+  name       String
+  jti        String   @unique
+  hash       String
+  lastFour   String
+  createdAt  DateTime @default(now())
+  revokedAt  DateTime?
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@map("api_keys")
+  @@index([companyId])
+}
+
+model Account {
+  id        String   @id @default(uuid())
+  companyId String
+  name      String
+  website   String?
+  industry  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company      Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  contacts     Contact[]
+  opportunities Opportunity[]
+
+  @@map("accounts")
+  @@unique([companyId, name])
+  @@index([companyId])
+}
+
+model Contact {
+  id         String   @id @default(uuid())
+  companyId  String
+  accountId  String
+  firstName  String
+  lastName   String
+  email      String
+  phone      String?
+  position   String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@map("contacts")
+  @@unique([companyId, email])
+  @@index([companyId])
+  @@index([accountId])
+}
+
+model Opportunity {
+  id          String            @id @default(uuid())
+  companyId   String
+  accountId   String
+  title       String
+  description String?
+  amount      Decimal           @db.Decimal(12, 2)
+  stage       OpportunityStage  @default(PREPARACION)
+  closeDate   DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  company    Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  account    Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  stageChanges StageChange[]
+  attachments  Attachment[]
+
+  @@map("opportunities")
+  @@index([companyId])
+  @@index([accountId])
+  @@index([companyId, stage])
+}
+
+model StageChange {
+  id             String           @id @default(uuid())
+  companyId      String
+  opportunityId  String
+  oldStage       OpportunityStage
+  newStage       OpportunityStage
+  reason         String?
+  changedById    String?
+  changedAt      DateTime         @default(now())
+
+  company     Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  opportunity Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  changedBy   User?       @relation(fields: [changedById], references: [id], onDelete: SetNull)
+
+  @@map("stage_changes")
+  @@index([companyId])
+  @@index([opportunityId])
+  @@index([companyId, newStage])
+  @@index([companyId, changedAt])
+}
+
+model Attachment {
+  id           String   @id @default(uuid())
+  companyId    String
+  opportunityId String
+  filename     String
+  contentType  String
+  size         Int
+  storageKey   String
+  uploadedById String?
+  uploadedAt   DateTime @default(now())
+
+  company     Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  opportunity Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  uploadedBy  User?       @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  @@map("attachments")
+  @@index([companyId])
+  @@index([opportunityId])
+}
+
