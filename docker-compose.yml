@@ -1,0 +1,86 @@
+name: crm-saas
+
+services:
+  backend:
+    profiles: ["backend", "app"]
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: crm-backend
+    working_dir: /usr/src/backend
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./Backend/.env
+    depends_on:
+      mysql:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - crm-net
+
+  # frontend:
+  #   profiles: ["frontend", "app"]
+  #   build:
+  #     context: ./Frontend
+  #     dockerfile: Dockerfile
+  #   container_name: crm-frontend
+  #   working_dir: /usr/src/frontend
+  #   ports: ["4200:4200"]
+  #   env_file: [./Frontend/.env]
+  #   restart: unless-stopped
+  #   networks: [crm-net]
+
+  mysql:
+    profiles: ["db", "app"]
+    image: mysql:8.0
+    container_name: crm-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: crm
+      MYSQL_USER: crm_user
+      MYSQL_PASSWORD: crm_pass
+      TZ: America/Montevideo
+    command: ["--default-authentication-plugin=mysql_native_password","--character-set-server=utf8mb4","--collation-server=utf8mb4_unicode_ci"]
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      # opcional: monta scripts .sql/.sh que corren al iniciar:
+      # - ./mysql/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    networks:
+      - crm-net
+
+  mongo:
+    profiles: ["db", "app"]
+    image: mongo:6.0
+    container_name: crm-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      # equivalente, un pelín más directo:
+      test: ["CMD-SHELL", "mongosh --quiet --eval 'db.adminCommand({ ping: 1 }).ok ? 0 : 1' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    networks:
+      - crm-net
+
+volumes:
+  mysql-data:
+  mongo-data:
+
+networks:
+  crm-net:
+    driver: bridge
